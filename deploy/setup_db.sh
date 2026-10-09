@@ -22,7 +22,9 @@ DO \$\$ BEGIN
 END \$\$;
 SQL
 runuser -u postgres -- psql -tc "SELECT 1 FROM pg_database WHERE datname='hausplan'" | grep -q 1 \
-  || runuser -u postgres -- createdb -O hausplan hausplan
+  || runuser -u postgres -- createdb -O hausplan -E UTF8 -T template0 --locale=C.UTF-8 hausplan
+# Hinweis: Debian-LXC-Templates haben oft die Locale "C" -> ohne -E UTF8 würde die
+# Datenbank SQL_ASCII verwenden und Umlaute (ä, ö, ü) führen zu Fehlern.
 
 # Nur aus dem Netz lauschen und nur den App-Container zulassen
 sed -i "s/^#\?listen_addresses.*/listen_addresses = '*'/" $CONF/postgresql.conf

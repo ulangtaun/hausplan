@@ -7,7 +7,7 @@ GIT_URL="${1:?Git-URL fehlt, z. B. https://github.com/<user>/hausplan.git}"
 APP_DIR=/opt/hausplan
 
 apt-get update
-apt-get install -y python3 python3-venv python3-pip git nginx
+apt-get install -y python3 python3-venv python3-pip git nginx curl
 
 id hausplan &>/dev/null || useradd --system --home "$APP_DIR" --shell /usr/sbin/nologin hausplan
 

@@ -14,7 +14,9 @@ id hausplan &>/dev/null || useradd --system --home "$APP_DIR" --shell /usr/sbin/
 if [ ! -d "$APP_DIR/.git" ]; then
   git clone "$GIT_URL" "$APP_DIR"
 else
-  git -C "$APP_DIR" pull --ff-only
+  # Das Repo gehört dem Benutzer hausplan -> als dieser Benutzer aktualisieren
+  # (als root bricht git sonst mit "dubious ownership" ab)
+  runuser -u hausplan -- git -C "$APP_DIR" pull --ff-only
 fi
 
 python3 -m venv "$APP_DIR/venv"

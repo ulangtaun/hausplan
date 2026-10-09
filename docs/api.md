@@ -1,6 +1,6 @@
 # REST-API von HausPlan
 
-Basis-URL: `https://hausplan.<deine-domain>.ch` (Port 443). Alle Antworten sind JSON.
+Basis-URL: `https://hausplan.nuscnet.ch` (Port 443). Alle Antworten sind JSON.
 Die Beispiele verwenden [HTTPie](https://httpie.io) (`http`) und `curl`.
 
 ## Authentifizierung (ohne Browser)
@@ -12,13 +12,13 @@ Tokens sind 7 Tage gültig und können widerrufen werden. Umsetzung mit Flask-HT
 nach Grinberg, *Flask Mega-Tutorial*, Kap. 23.
 
 ```bash
-http --auth examinator:PASSWORT POST https://host/api/tokens
-curl -u examinator:PASSWORT -X POST https://host/api/tokens
+http --auth examinator:PASSWORT POST https://hausplan.nuscnet.ch/api/tokens
+curl -u examinator:PASSWORT -X POST https://hausplan.nuscnet.ch/api/tokens
 # -> {"token": "3f9c…", "expires": "2026-…"}
 
 export T=3f9c…
-http GET https://host/api/households "Authorization:Bearer $T"
-curl https://host/api/households -H "Authorization: Bearer $T"
+http GET https://hausplan.nuscnet.ch/api/households "Authorization:Bearer $T"
+curl https://hausplan.nuscnet.ch/api/households -H "Authorization: Bearer $T"
 ```
 
 ## Endpunkte
@@ -42,17 +42,17 @@ curl https://host/api/households -H "Authorization: Bearer $T"
 Vollständige Testbefehle (Haushalt 1 = «Demo-Wohnung» aus den Demo-Daten):
 
 ```bash
-http GET  https://host/api/users/me                         "Authorization:Bearer $T"
-http GET  https://host/api/households/1                     "Authorization:Bearer $T"
-http GET  https://host/api/households/1/projects status==geplant "Authorization:Bearer $T"
-http GET  https://host/api/households/1/ranking             "Authorization:Bearer $T"
-http GET  https://host/api/households/1/order               "Authorization:Bearer $T"
-http GET  https://host/api/households/1/plan                "Authorization:Bearer $T"
-http GET  https://host/api/households/1/stats               "Authorization:Bearer $T"
-http GET  https://host/api/projects/4                       "Authorization:Bearer $T"
-http POST https://host/api/households/1/projects            "Authorization:Bearer $T" \
+http GET  https://hausplan.nuscnet.ch/api/users/me                         "Authorization:Bearer $T"
+http GET  https://hausplan.nuscnet.ch/api/households/1                     "Authorization:Bearer $T"
+http GET  https://hausplan.nuscnet.ch/api/households/1/projects status==geplant "Authorization:Bearer $T"
+http GET  https://hausplan.nuscnet.ch/api/households/1/ranking             "Authorization:Bearer $T"
+http GET  https://hausplan.nuscnet.ch/api/households/1/order               "Authorization:Bearer $T"
+http GET  https://hausplan.nuscnet.ch/api/households/1/plan                "Authorization:Bearer $T"
+http GET  https://hausplan.nuscnet.ch/api/households/1/stats               "Authorization:Bearer $T"
+http GET  https://hausplan.nuscnet.ch/api/projects/4                       "Authorization:Bearer $T"
+http POST https://hausplan.nuscnet.ch/api/households/1/projects            "Authorization:Bearer $T" \
           title="Pflanzen umtopfen" estimated_cost:=30 estimated_hours:=1
-http DELETE https://host/api/tokens                         "Authorization:Bearer $T"
+http DELETE https://hausplan.nuscnet.ch/api/tokens                         "Authorization:Bearer $T"
 ```
 
 ### POST `/api/households/<id>/projects`

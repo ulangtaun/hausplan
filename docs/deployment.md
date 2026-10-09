@@ -15,10 +15,10 @@ Beispielwerte (bitte an dein Netz anpassen):
 
 | Was | Wert |
 |---|---|
-| App-Container | CT 120, `hausplan-app`, 192.168.1.20 |
-| DB-Container | CT 121, `hausplan-db`, 192.168.1.21 |
-| Gateway / DNS | 192.168.1.1 |
-| Öffentliche Adresse | `https://hausplan.<deine-domain>.ch` |
+| App-Container | CT 120, `hausplan-app`, 192.168.178.220 |
+| DB-Container | CT 121, `hausplan-db`, 192.168.178.221 |
+| Gateway / DNS | 192.168.178.1 |
+| Öffentliche Adresse | `https://hausplan.nuscnet.ch` (Cloudflare Tunnel) |
 
 ---
 
@@ -43,23 +43,23 @@ Template laden (Name der aktuellen Version mit `pveam available` prüfen):
 ```bash
 pveam update
 pveam available --section system | grep debian-13
-pveam download local debian-13-standard_<version>_amd64.tar.zst
+pveam download local debian-13-standard_13.6-1_amd64.tar.zst
 ```
 
 Container erstellen. `onboot=1` und `startup` sorgen dafür, dass nach einem Stromausfall zuerst die
 Datenbank und dann die App startet – wichtig für die 4 Wochen Korrekturzeit.
 
 ```bash
-TEMPLATE=local:vztmpl/debian-13-standard_<version>_amd64.tar.zst
+TEMPLATE=local:vztmpl/debian-13-standard_13.6-1_amd64.tar.zst
 
 pct create 121 $TEMPLATE --hostname hausplan-db --cores 1 --memory 1024 --swap 512 \
-  --rootfs local-lvm:8 --net0 name=eth0,bridge=vmbr0,ip=192.168.1.21/24,gw=192.168.1.1 \
-  --nameserver 192.168.1.1 --unprivileged 1 --features nesting=1 \
+  --rootfs local-lvm:8 --net0 name=eth0,bridge=vmbr0,ip=192.168.178.221/24,gw=192.168.178.1 \
+  --nameserver 192.168.178.1 --unprivileged 1 --features nesting=1 \
   --onboot 1 --startup order=1,up=20 --password
 
 pct create 120 $TEMPLATE --hostname hausplan-app --cores 2 --memory 1024 --swap 512 \
-  --rootfs local-lvm:8 --net0 name=eth0,bridge=vmbr0,ip=192.168.1.20/24,gw=192.168.1.1 \
-  --nameserver 192.168.1.1 --unprivileged 1 --features nesting=1 \
+  --rootfs local-lvm:8 --net0 name=eth0,bridge=vmbr0,ip=192.168.178.220/24,gw=192.168.178.1 \
+  --nameserver 192.168.178.1 --unprivileged 1 --features nesting=1 \
   --onboot 1 --startup order=2 --password
 
 pct start 121 && pct start 120
@@ -74,8 +74,8 @@ pct start 121 && pct start 120
 ```bash
 pct enter 121
 apt-get update && apt-get install -y git
-git clone https://github.com/<user>/hausplan.git /root/hausplan
-bash /root/hausplan/deploy/setup_db.sh 192.168.1.20 '<starkes-db-passwort>'
+git clone https://github.com/ulangtaun/hausplan.git /root/hausplan
+bash /root/hausplan/deploy/setup_db.sh 192.168.178.220 '<starkes-db-passwort>'
 
 # Tägliches Backup
 cp /root/hausplan/deploy/backup_db.sh /root/ && chmod +x /root/backup_db.sh
@@ -87,8 +87,8 @@ cp /root/hausplan/deploy/backup_db.sh /root/ && chmod +x /root/backup_db.sh
 ```bash
 pct enter 120
 apt-get update && apt-get install -y git
-git clone https://github.com/<user>/hausplan.git /root/hausplan-src
-bash /root/hausplan-src/deploy/setup_app.sh https://github.com/<user>/hausplan.git
+git clone https://github.com/ulangtaun/hausplan.git /root/hausplan-src
+bash /root/hausplan-src/deploy/setup_app.sh https://github.com/ulangtaun/hausplan.git
 ```
 
 Der erste Lauf legt `/opt/hausplan/.env` mit einem zufälligen `SECRET_KEY` an und bricht ab.
@@ -96,15 +96,15 @@ Jetzt die Datenbank eintragen:
 
 ```bash
 nano /opt/hausplan/.env
-# DATABASE_URL=postgresql+psycopg2://hausplan:<starkes-db-passwort>@192.168.1.21/hausplan
+# DATABASE_URL=postgresql+psycopg2://hausplan:<starkes-db-passwort>@192.168.178.221/hausplan
 # SESSION_COOKIE_SECURE=true
 # PROXY_COUNT=1
 
-bash /opt/hausplan/deploy/setup_app.sh https://github.com/<user>/hausplan.git   # zweiter Lauf
+bash /opt/hausplan/deploy/setup_app.sh https://github.com/ulangtaun/hausplan.git   # zweiter Lauf
 cd /opt/hausplan && runuser -u hausplan -- venv/bin/flask seed                  # Demo-Daten + Testkonten
 ```
 
-Test im LAN: `http://192.168.1.20` im Browser öffnen.
+Test im LAN: `http://192.168.178.220` im Browser öffnen.
 
 > Hinweis: `SESSION_COOKIE_SECURE=true` bedeutet, dass das Login nur über HTTPS funktioniert. Für einen
 > Test im LAN über `http://` vorübergehend auf `false` setzen und `systemctl restart hausplan`.
@@ -123,7 +123,7 @@ Test im LAN: `http://192.168.1.20` im Browser öffnen.
 ```bash
 cloudflared tunnel login
 cloudflared tunnel create hausplan
-cloudflared tunnel route dns hausplan hausplan.<deine-domain>.ch
+cloudflared tunnel route dns hausplan hausplan.nuscnet.ch
 # deploy/cloudflared-config.yml nach /etc/cloudflared/config.yml kopieren und UUID eintragen
 cloudflared service install
 ```
@@ -138,7 +138,7 @@ Der Examinator testet das API mit `curl`/`httpie`. Cloudflare darf diese Anfrage
 |---|---|---|
 | Bot Fight Mode | **aus** | Security → Bots |
 | Browser Integrity Check | aus oder per Regel für `/api/` überspringen | Security → Settings |
-| Cloudflare Access | **keine** Application auf `hausplan.<domain>` (oder `/api/*` ausnehmen) | Zero Trust → Access |
+| Cloudflare Access | **keine** Application auf `hausplan.nuscnet.ch` (oder `/api/*` ausnehmen) | Zero Trust → Access |
 | SSL/TLS | *Full* ist nicht nötig (Tunnel), Standard genügt; «Always Use HTTPS» **an** | SSL/TLS |
 
 Optional eine WAF Custom Rule: *URI Path starts with `/api/`* → **Skip** (alle verwalteten Regeln / Super Bot Fight Mode).
@@ -146,7 +146,7 @@ Optional eine WAF Custom Rule: *URI Path starts with `/api/`* → **Skip** (alle
 ## 6. Abnahmetest von extern (z. B. Handy-Hotspot)
 
 ```bash
-H=https://hausplan.<deine-domain>.ch
+H=https://hausplan.nuscnet.ch
 curl -I $H/auth/login                                  # 200
 curl -u examinator:'<passwort>' -X POST $H/api/tokens  # {"token": "..."}
 curl $H/api/households -H "Authorization: Bearer <token>"

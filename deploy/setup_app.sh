@@ -3,7 +3,7 @@
 # Aufruf im App-Container als root:   bash setup_app.sh <GIT_URL>
 # Danach /opt/hausplan/.env ausfüllen und dieses Skript nochmals starten.
 set -euo pipefail
-GIT_URL="${1:?Git-URL fehlt, z. B. https://github.com/<user>/hausplan.git}"
+GIT_URL="${1:?Git-URL fehlt, z. B. https://github.com/ulangtaun/hausplan.git}"
 APP_DIR=/opt/hausplan
 
 apt-get update

@@ -2,7 +2,7 @@
 # Einrichtung des Datenbank-Containers (Debian 13, PostgreSQL 17).
 # Aufruf im DB-Container als root:   bash setup_db.sh <APP_IP> <DB_PASSWORT>
 set -euo pipefail
-APP_IP="${1:?App-IP fehlt, z. B. 192.168.1.20}"
+APP_IP="${1:?App-IP fehlt, z. B. 192.168.178.220}"
 DB_PW="${2:?Datenbank-Passwort fehlt}"
 
 apt-get update

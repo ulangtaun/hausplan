@@ -197,13 +197,13 @@ flowchart TD
 ## 6. Bereitstellungsdiagramm
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph Clients
         BR[Webbrowser]
         CL[API-Client<br/>curl / httpie / Postman]
     end
     subgraph CF[Cloudflare]
-        EDGE[Edge: TLS, DNS,<br/>DDoS-Schutz]
+        EDGE[hausplan.nuscnet.ch<br/>TLS, DNS, DDoS-Schutz]
     end
     subgraph PVE[Proxmox-Cluster zuhause]
         subgraph APP[LXC 120 hausplan-app · Debian 13]
@@ -225,7 +225,7 @@ flowchart LR
     CFD -- HTTP --> NG
     NG -- HTTP --> GU
     GU --- FL
-    FL -- TCP 5432, nur von 192.168.1.20 --> PG
+    FL -- TCP 5432, nur von 192.168.178.220 --> PG
     PG --- BK
     PBS -. sichert .-> APP
     PBS -. sichert .-> DBC

@@ -9,8 +9,8 @@ Reihenfolge vor und berechnet, welche Projekte ins Quartalsbudget passen.
 
 | | |
 |---|---|
-| Webanwendung | `https://hausplan.<domain>.ch` (Port 443) |
-| API | `https://hausplan.<domain>.ch/api/…` – siehe [docs/api.md](docs/api.md) |
+| Webanwendung | `https://hausplan.nuscnet.ch` (Port 443) |
+| API | `https://hausplan.nuscnet.ch/api/…` – siehe [docs/api.md](docs/api.md) |
 | Testkonten | `examinator` (Besitzer der Demo-Wohnung), `mitbewohner` – Passwort siehe Abgabedokument |
 
 ## Funktionen
@@ -44,6 +44,7 @@ python -m pytest -v                  # 30 Tests, siehe docs/testprotokoll.md
 
 | Datei | Inhalt |
 |---|---|
+| [docs/Praxisarbeit_DBWE.TA1A.PA_HausPlan_Nury_Schmed.pdf](docs/Praxisarbeit_DBWE.TA1A.PA_HausPlan_Nury_Schmed.pdf) | Lösungsdokument der Praxisarbeit (PDF) |
 | [docs/architektur.md](docs/architektur.md) | Code-Struktur, ERD, Zustands-, Sequenz-, Aktivitäts- und Bereitstellungsdiagramm, Technologien, Quellen, Reflexion |
 | [docs/diagramme/](docs/diagramme) | Diagramme als PNG und SVG für das PDF |
 | [docs/api.md](docs/api.md) | API-Endpunkte im Format `<Methode> <URL>` mit Beispielen |

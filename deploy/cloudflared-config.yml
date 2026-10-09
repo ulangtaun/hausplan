@@ -5,6 +5,6 @@ tunnel: <TUNNEL-UUID>
 credentials-file: /etc/cloudflared/<TUNNEL-UUID>.json
 
 ingress:
-  - hostname: hausplan.example.ch
+  - hostname: hausplan.nuscnet.ch
     service: http://localhost:80
   - service: http_status:404

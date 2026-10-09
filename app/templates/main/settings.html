@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field with context %}
+{% block content %}
+<nav class="small mb-2"><a href="{{ url_for('main.household', id=household.id) }}">← {{ household.name }}</a></nav>
+<h1 class="h3 mb-4">Einstellungen</h1>
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card mb-4"><div class="card-body">
+      <h2 class="h5">Haushalt &amp; Planungsrahmen</h2>
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ field(form.name) }}{{ field(form.budget_chf) }}{{ field(form.hours_available) }}
+        {{ form.submit(class="btn btn-primary") }}
+      </form>
+    </div></div>
+
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Mitglieder</h2>
+      <ul class="list-group mb-3">
+        {% for m in household.memberships|sort(attribute='user.username') %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>{{ m.user.username }} {% if m.role == 'owner' %}<span class="badge text-bg-dark">Besitzer</span>{% endif %}</span>
+          <span class="d-flex gap-1">
+            <form method="post" action="{{ url_for('main.member_action', id=household.id, uid=m.user.id, action='member' if m.role == 'owner' else 'owner') }}">
+              {{ empty_form.hidden_tag() }}<button class="btn btn-sm btn-link">{{ 'zu Mitglied' if m.role == 'owner' else 'zu Besitzer' }}</button></form>
+            <form method="post" action="{{ url_for('main.member_action', id=household.id, uid=m.user.id, action='remove') }}">
+              {{ empty_form.hidden_tag() }}<button class="btn btn-sm btn-link text-danger">entfernen</button></form>
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      <form method="post" action="{{ url_for('main.add_member', id=household.id) }}" class="d-flex gap-2" novalidate>
+        {{ member_form.hidden_tag() }}
+        {{ member_form.username(class="form-control", placeholder="Benutzername") }}
+        {{ member_form.submit(class="btn btn-outline-primary") }}
+      </form>
+    </div></div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Bewertungskriterien</h2>
+      <p class="small text-muted">Jedes Mitglied bewertet jedes Projekt pro Kriterium mit 1–5. Das Gewicht bestimmt,
+        wie stark ein Kriterium in den Score einfliesst. Bei Kosten-Kriterien ist ein hoher Wert schlecht.</p>
+      <table class="table align-middle">
+        <thead><tr><th>Kriterium</th><th>Richtung</th><th style="width:9rem">Gewicht</th><th></th></tr></thead>
+        <tbody>
+        {% for c in household.criteria %}
+        <tr>
+          <td><strong>{{ c.name }}</strong>{% if c.description %}<div class="small text-muted">{{ c.description }}</div>{% endif %}</td>
+          <td class="small">{{ 'Kosten ↓' if c.direction == 'cost' else 'Nutzen ↑' }}</td>
+          <td>
+            <form method="post" action="{{ url_for('main.update_criterion_weight', cid=c.id) }}" class="d-flex gap-1">
+              {{ empty_form.hidden_tag() }}
+              <select name="weight" class="form-select form-select-sm" onchange="this.form.submit()">
+                {% for w in range(1, 6) %}<option value="{{ w }}" {{ 'selected' if w == c.weight }}>{{ w }}</option>{% endfor %}
+              </select>
+            </form>
+          </td>
+          <td><form method="post" action="{{ url_for('main.delete_criterion', cid=c.id) }}" onsubmit="return confirm('Kriterium und alle Bewertungen dazu löschen?')">
+              {{ empty_form.hidden_tag() }}<button class="btn btn-sm btn-link text-danger">löschen</button></form></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <h3 class="h6 mt-4">Kriterium hinzufügen</h3>
+      <form method="post" action="{{ url_for('main.add_criterion', id=household.id) }}" novalidate>
+        {{ criterion_form.hidden_tag() }}
+        <div class="row">
+          <div class="col-md-6">{{ field(criterion_form.name) }}</div>
+          <div class="col-md-6">{{ field(criterion_form.weight) }}</div>
+        </div>
+        {{ field(criterion_form.description) }}
+        {{ field(criterion_form.direction) }}
+        {{ criterion_form.submit(class="btn btn-outline-primary") }}
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

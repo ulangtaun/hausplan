@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field, chf with context %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Meine Haushalte</h1>
+</div>
+<div class="row g-4">
+  <div class="col-lg-8">
+    {% for h, counts in overview %}
+    <a class="card hp-card mb-3 text-decoration-none text-body" href="{{ url_for('main.household', id=h.id) }}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <h2 class="h5 mb-1">{{ h.name }}</h2>
+          <span class="text-muted small">{{ h.members|length }} Mitglied{{ 'er' if h.members|length != 1 }}</span>
+        </div>
+        <div class="small text-muted mb-2">Budget {{ chf(h.budget_chf) }} · {{ h.hours_available|float|round(0)|int }} h pro Quartal</div>
+        <div class="d-flex flex-wrap gap-2 small">
+          {% for s, n in counts.items() if n %}
+            <span class="badge hp-status hp-status-{{ s }}">{{ STATUS_LABELS[s] }}: {{ n }}</span>
+          {% else %}<span class="text-muted">Noch keine Projekte</span>{% endfor %}
+        </div>
+      </div>
+    </a>
+    {% else %}
+    <div class="alert alert-light border">
+      Du bist noch in keinem Haushalt. Erstelle rechts einen neuen – oder lass dich von jemandem
+      über deinen Benutzernamen <strong>{{ current_user.username }}</strong> hinzufügen.
+    </div>
+    {% endfor %}
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm"><div class="card-body">
+      <h2 class="h5">Neuer Haushalt</h2>
+      <form method="post" action="{{ url_for('main.create_household') }}" novalidate>
+        {{ form.hidden_tag() }}
+        {{ field(form.name) }}
+        {{ field(form.budget_chf) }}
+        {{ field(form.hours_available) }}
+        {{ form.submit(class="btn btn-primary w-100", value="Haushalt erstellen") }}
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

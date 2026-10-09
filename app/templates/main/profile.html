@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h3 mb-3">Profil &amp; API-Zugang</h1>
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card"><div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-5">Benutzername</dt><dd class="col-7">{{ current_user.username }}</dd>
+        <dt class="col-5">E-Mail</dt><dd class="col-7">{{ current_user.email }}</dd>
+        <dt class="col-5">Haushalte</dt><dd class="col-7">{{ current_user.households()|map(attribute='name')|join(', ') or '–' }}</dd>
+      </dl>
+    </div></div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">API-Token</h2>
+      <p class="small text-muted">Das Token ersetzt beim API das Passwort. Du kannst es auch ohne Browser holen:
+        <code>http --auth {{ current_user.username }} POST {{ request.host_url }}api/tokens</code></p>
+      {% if token %}
+        <div class="alert alert-success"><div class="small mb-1">Dein Token (gültig bis {{ current_user.token_expiration.strftime('%d.%m.%Y %H:%M') }} UTC):</div>
+          <code class="user-select-all text-break">{{ token }}</code></div>
+        <pre class="hp-code">http GET {{ request.host_url }}api/households "Authorization:Bearer {{ token }}"</pre>
+      {% endif %}
+      <form method="post" class="d-flex gap-2">
+        {{ form.hidden_tag() }}
+        <button name="action" value="create" class="btn btn-primary">Token anzeigen / erstellen</button>
+        <button name="action" value="revoke" class="btn btn-outline-danger">Token widerrufen</button>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

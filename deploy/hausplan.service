@@ -1,0 +1,22 @@
+# systemd-Unit für Gunicorn  ->  /etc/systemd/system/hausplan.service
+# Aktivieren: systemctl daemon-reload && systemctl enable --now hausplan
+[Unit]
+Description=HausPlan (Gunicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=hausplan
+Group=hausplan
+WorkingDirectory=/opt/hausplan
+# Die Datei .env im Projektordner wird von config.py gelesen.
+ExecStart=/opt/hausplan/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 \
+          --access-logfile - --error-logfile - hausplan:app
+Restart=always
+RestartSec=5
+# Etwas Härtung
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% from "_macros.html" import score_badge, status_badge, chf with context %}
+{% block content %}
+<nav class="small mb-2"><a href="{{ url_for('main.household', id=household.id) }}">← {{ household.name }}</a></nav>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ project.title }}</h1>
+    <div class="d-flex gap-2 align-items-center">{{ status_badge(project.status) }} {{ score_badge(score) }}</div>
+  </div>
+  <div class="d-flex gap-2">
+    {% if project.status != 'erledigt' %}<a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.edit_project', id=project.id) }}">Bearbeiten</a>{% endif %}
+    {% if can_delete %}
+    <form method="post" action="{{ url_for('main.delete_project', id=project.id) }}" onsubmit="return confirm('Projekt wirklich löschen?')">
+      {{ empty_form.hidden_tag() }}<button class="btn btn-outline-danger btn-sm">Löschen</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    {% if project.description %}<div class="card mb-4"><div class="card-body hp-desc">{{ project.description }}</div></div>{% endif %}
+
+    <!-- Bewertung -->
+    <div class="card mb-4"><div class="card-body">
+      <h2 class="h5">Meine Bewertung</h2>
+      {% if can_rate %}
+      <form method="post" action="{{ url_for('main.rate_project', id=project.id) }}">
+        {{ empty_form.hidden_tag() }}
+        {% for c in household.criteria %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between">
+            <label class="form-label mb-0 fw-semibold">{{ c.name }} <span class="text-muted small">(Gewicht {{ c.weight }}{{ ', Kosten-Kriterium' if c.direction == 'cost' }})</span></label>
+          </div>
+          {% if c.description %}<div class="small text-muted">{{ c.description }}</div>{% endif %}
+          <div class="btn-group mt-1" role="group">
+            {% for v in range(1, 6) %}
+            <input type="radio" class="btn-check" name="c_{{ c.id }}" id="c{{ c.id }}_{{ v }}" value="{{ v }}" {{ 'checked' if my_values.get(c.id) == v }} required>
+            <label class="btn btn-outline-primary" for="c{{ c.id }}_{{ v }}">{{ v }}</label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+        <button class="btn btn-primary">Bewertung speichern</button>
+      </form>
+      {% else %}
+      <p class="text-muted mb-0">In diesem Status kann nicht mehr bewertet werden.</p>
+      {% endif %}
+    </div></div>
+
+    <!-- Abhängigkeiten -->
+    <div class="card mb-4"><div class="card-body">
+      <h2 class="h5">Abhängigkeiten</h2>
+      <p class="small text-muted">Dieses Projekt kann erst starten, wenn diese Projekte erledigt sind.</p>
+      <ul class="list-group mb-3">
+        {% for d in project.dependencies %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>{{ '✅' if d.status == 'erledigt' else '⏳' }} <a href="{{ url_for('main.project', id=d.id) }}">{{ d.title }}</a> {{ status_badge(d.status) }}</span>
+          <form method="post" action="{{ url_for('main.delete_project_dependency', id=project.id, dep_id=d.id) }}">
+            {{ empty_form.hidden_tag() }}<button class="btn btn-sm btn-link text-danger">entfernen</button>
+          </form>
+        </li>
+        {% else %}<li class="list-group-item text-muted">Keine</li>{% endfor %}
+      </ul>
+      {% if project.status in ('idee', 'bewertet', 'geplant') and candidates %}
+      <form method="post" action="{{ url_for('main.add_project_dependency', id=project.id) }}" class="d-flex gap-2">
+        {{ empty_form.hidden_tag() }}
+        <select name="depends_on" class="form-select">
+          {% for c in candidates %}<option value="{{ c.id }}">{{ c.title }} ({{ STATUS_LABELS[c.status] }})</option>{% endfor %}
+        </select>
+        <button class="btn btn-outline-primary text-nowrap">Hängt ab von</button>
+      </form>
+      {% endif %}
+      {% if project.dependents %}
+      <p class="small mt-3 mb-0">Wird benötigt von:
+        {% for d in project.dependents %}<a href="{{ url_for('main.project', id=d.id) }}">{{ d.title }}</a>{{ ', ' if not loop.last }}{% endfor %}</p>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="col-lg-5">
+    <!-- Status -->
+    <div class="card mb-4"><div class="card-body">
+      <h2 class="h5">Status</h2>
+      {% for a in actions %}
+        <form method="post" action="{{ url_for('main.project_status', id=project.id) }}" class="mb-2">
+          {{ empty_form.hidden_tag() }}
+          <input type="hidden" name="target" value="{{ a.target }}">
+          {% if a.target == 'erledigt' %}
+          <div class="row g-2 mb-2">
+            <div class="col"><input class="form-control form-control-sm" name="actual_cost" placeholder="Ist-Kosten CHF" inputmode="decimal" required></div>
+            <div class="col"><input class="form-control form-control-sm" name="actual_hours" placeholder="Ist-Stunden" inputmode="decimal" required></div>
+          </div>
+          {% endif %}
+          <button class="btn btn-sm {{ 'btn-outline-danger' if a.target == 'verworfen' else 'btn-primary' }}" {{ 'disabled' if a.blocked_by }}>{{ a.label }}</button>
+          {% for r in a.blocked_by %}<div class="small text-danger mt-1">{{ r }}</div>{% endfor %}
+        </form>
+      {% else %}<p class="text-muted mb-0">Keine weiteren Statuswechsel möglich.</p>{% endfor %}
+    </div></div>
+
+    <!-- Bewertungsübersicht -->
+    <div class="card mb-4"><div class="card-body">
+      <h2 class="h5">Bewertungen im Haushalt</h2>
+      <table class="table table-sm mb-2">
+        <tbody>
+        {% for u in household.members %}
+          <tr><td>{{ u.username }}</td>
+              <td class="text-end">{% if u.id in score.user_scores %}<strong>{{ score.user_scores[u.id]|round(0)|int }}</strong> / 100{% else %}<span class="text-muted">ausstehend</span>{% endif %}</td></tr>
+        {% endfor %}
+        </tbody>
+        {% if score.score is not none %}
+        <tfoot><tr><th>Gemeinsamer Score</th><th class="text-end">{{ score.score|round(1) }}</th></tr></tfoot>
+        {% endif %}
+      </table>
+      {% if score.disagreement %}
+      <div class="alert alert-warning small mb-0"><strong>Diskussionsbedarf:</strong>
+        <ul class="mb-0">{% for r in score.disagreement_reasons %}<li>{{ r }}</li>{% endfor %}</ul></div>
+      {% endif %}
+    </div></div>
+
+    <!-- Zahlen -->
+    <div class="card"><div class="card-body small">
+      <h2 class="h5">Aufwand</h2>
+      <dl class="row mb-0">
+        <dt class="col-6">Geschätzt</dt><dd class="col-6">{{ chf(project.estimated_cost) }} · {{ project.estimated_hours|float|round(1) }} h</dd>
+        {% if project.actual_cost is not none %}
+        <dt class="col-6">Effektiv</dt><dd class="col-6">{{ chf(project.actual_cost) }} · {{ project.actual_hours|float|round(1) }} h</dd>
+        {% endif %}
+        <dt class="col-6">Erfasst von</dt><dd class="col-6">{{ project.created_by.username if project.created_by else '–' }}</dd>
+        <dt class="col-6">Erfasst am</dt><dd class="col-6">{{ project.created_at.strftime('%d.%m.%Y') }}</dd>
+      </dl>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

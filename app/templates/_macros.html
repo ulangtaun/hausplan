@@ -1,0 +1,28 @@
+{% macro field(f, type=None) %}
+<div class="mb-3">
+  {{ f.label(class="form-label") }}
+  {% if f.type == 'BooleanField' %}
+    <div class="form-check">{{ f(class="form-check-input") }}</div>
+  {% elif f.type == 'SelectField' %}
+    {{ f(class="form-select" + (" is-invalid" if f.errors else "")) }}
+  {% else %}
+    {{ f(class="form-control" + (" is-invalid" if f.errors else ""), **({'type': type} if type else {})) }}
+  {% endif %}
+  {% for e in f.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+</div>
+{% endmacro %}
+
+{% macro score_badge(score) %}
+  {% if score.score is none %}
+    <span class="badge text-bg-light border">unbewertet</span>
+  {% else %}
+    <span class="badge hp-score" style="--s: {{ score.score|round(0) }}">{{ score.score|round(0)|int }}</span>
+  {% endif %}
+  {% if score.disagreement %}<span class="badge text-bg-warning" title="{{ score.disagreement_reasons|join(' ') }}">💬 Diskussion</span>{% endif %}
+{% endmacro %}
+
+{% macro status_badge(status) %}
+<span class="badge hp-status hp-status-{{ status }}">{{ STATUS_LABELS[status] }}</span>
+{% endmacro %}
+
+{% macro chf(v) %}CHF {{ "{:,.0f}".format(v|float).replace(",", "'") }}{% endmacro %}

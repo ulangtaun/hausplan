@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+{% set host = request.host_url.rstrip('/') %}
+<h1 class="h3 mb-3">Hilfe</h1>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">So funktioniert HausPlan</h2>
+      <ol class="mb-0">
+        <li><strong>Haushalt erstellen</strong> und Mitglieder über ihren Benutzernamen hinzufügen.</li>
+        <li><strong>Ideen erfassen</strong> – mit geschätzten Kosten und Stunden.</li>
+        <li><strong>Bewerten:</strong> Alle bewerten jedes Projekt nach den Kriterien des Haushalts (1–5).
+          Daraus entsteht ein gewichteter Score von 0–100. Liegen die Meinungen weit auseinander, erscheint 💬 <em>Diskussion</em>.</li>
+        <li>Sobald alle bewertet haben, wechselt die Idee automatisch auf <strong>Bewertet</strong>.</li>
+        <li><strong>Abhängigkeiten</strong> festlegen (z. B. «Wand streichen» vor «Lampe montieren»). Zirkuläre Abhängigkeiten werden abgelehnt.</li>
+        <li>Unter <strong>Planung</strong> zeigt HausPlan, was ins Quartalsbudget passt und in welcher Reihenfolge ihr vorgehen solltet.</li>
+        <li><strong>Einplanen → Starten → Abschliessen</strong>. Beim Abschluss die effektiven Kosten und Stunden erfassen – daraus lernt die Schätzgenauigkeit.</li>
+      </ol>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">REST-API</h2>
+      <p class="small">Authentifizierung ohne Browser: zuerst mit Benutzername und Passwort ein Token holen,
+        danach das Token im Header <code>Authorization: Bearer &lt;token&gt;</code> mitsenden.</p>
+      <pre class="hp-code">http --auth BENUTZER:PASSWORT POST {{ host }}/api/tokens
+curl -u BENUTZER:PASSWORT -X POST {{ host }}/api/tokens</pre>
+      <table class="table table-sm small">
+        <tbody>
+          <tr><td><code>POST</code></td><td><code>/api/tokens</code></td><td>Token holen (Basic Auth)</td></tr>
+          <tr><td><code>DELETE</code></td><td><code>/api/tokens</code></td><td>Token widerrufen</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/users/me</code></td><td>Eigenes Profil</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/households</code></td><td>Meine Haushalte</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/households/&lt;id&gt;</code></td><td>Haushalt mit Mitgliedern, Kriterien</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/households/&lt;id&gt;/projects?status=geplant</code></td><td>Projekte (optional gefiltert)</td></tr>
+          <tr><td><code>POST</code></td><td><code>/api/households/&lt;id&gt;/projects</code></td><td>Neue Idee erfassen (JSON)</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/households/&lt;id&gt;/ranking</code></td><td>Offene Projekte nach Score</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/households/&lt;id&gt;/order</code></td><td>Empfohlene Reihenfolge</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/households/&lt;id&gt;/plan</code></td><td>Budget-Vorschlag</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/households/&lt;id&gt;/stats</code></td><td>Kennzahlen &amp; Schätzgenauigkeit</td></tr>
+          <tr><td><code>GET</code></td><td><code>/api/projects/&lt;id&gt;</code></td><td>Projekt mit Bewertungen &amp; Abhängigkeiten</td></tr>
+        </tbody>
+      </table>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

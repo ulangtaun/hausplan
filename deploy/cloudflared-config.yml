@@ -1,0 +1,10 @@
+# Nur nötig für einen lokal verwalteten Tunnel (Variante B in docs/deployment.md).
+# Bei Variante A (Tunnel im Cloudflare-Dashboard) wird diese Datei nicht gebraucht.
+# Ablage: /etc/cloudflared/config.yml
+tunnel: <TUNNEL-UUID>
+credentials-file: /etc/cloudflared/<TUNNEL-UUID>.json
+
+ingress:
+  - hostname: hausplan.example.ch
+    service: http://localhost:80
+  - service: http_status:404

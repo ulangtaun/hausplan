@@ -1,0 +1,47 @@
+/* HausPlan – ergänzt Bootstrap 5 um ein paar eigene Komponenten */
+:root {
+  --hp-ink: #1f2a37;
+  --hp-accent: #2f6f5e;
+  --hp-bg: #f5f3ef;
+}
+body { background: var(--hp-bg); color: var(--hp-ink); }
+.hp-nav { background: var(--hp-ink); }
+.hp-logo { color: #8fd3b6; font-size: 1.3rem; }
+.btn-primary { --bs-btn-bg: var(--hp-accent); --bs-btn-border-color: var(--hp-accent);
+  --bs-btn-hover-bg: #255a4c; --bs-btn-hover-border-color: #255a4c;
+  --bs-btn-active-bg: #1f4c40; --bs-btn-disabled-bg: #7aa79a; --bs-btn-disabled-border-color: #7aa79a; }
+.btn-outline-primary { --bs-btn-color: var(--hp-accent); --bs-btn-border-color: var(--hp-accent);
+  --bs-btn-hover-bg: var(--hp-accent); --bs-btn-hover-border-color: var(--hp-accent);
+  --bs-btn-active-bg: var(--hp-accent); --bs-btn-active-border-color: var(--hp-accent); }
+a { color: var(--hp-accent); }
+.card { border: 1px solid #e4e0d8; border-radius: .75rem; }
+.hp-card { transition: transform .12s ease, box-shadow .12s ease; }
+.hp-card:hover { transform: translateY(-2px); box-shadow: 0 .4rem 1rem rgba(31,42,55,.08); }
+
+/* Kanban-Board */
+.hp-board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr);
+  gap: 1rem; overflow-x: auto; padding-bottom: .5rem; }
+.hp-col { background: #ebe7df; border-radius: .75rem; padding: .75rem; min-height: 8rem; }
+.hp-col-title { font-size: .9rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; margin-bottom: .75rem; }
+.hp-dot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; margin-right: .4rem; }
+
+/* Status-Farben */
+.hp-status { color: #fff; font-weight: 500; }
+.hp-status-idee { background: #8a94a6; }
+.hp-status-bewertet { background: #4f7cac; }
+.hp-status-geplant { background: #b7791f; }
+.hp-status-in_arbeit { background: #c05621; }
+.hp-status-erledigt { background: #2f855a; }
+.hp-status-verworfen { background: #a0a0a0; }
+
+/* Score-Badge: Farbe von rot (0) bis grün (100) */
+.hp-score { background: hsl(calc(var(--s) * 1.2), 55%, 40%); color: #fff; min-width: 2.2rem; }
+
+.hp-kpi { background: #fff; border: 1px solid #e4e0d8; border-radius: .75rem; padding: .9rem 1rem; height: 100%; }
+.hp-kpi-label { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; }
+.hp-kpi-value { font-size: 1.4rem; font-weight: 600; }
+.hp-meter { height: .6rem; background: #e5e1d9; border-radius: 1rem; overflow: hidden; }
+.hp-meter > div { height: 100%; background: var(--hp-accent); }
+.hp-order li { margin-bottom: .4rem; }
+.hp-desc { white-space: pre-wrap; }
+.hp-code { background: #1f2a37; color: #e5e7eb; padding: .75rem; border-radius: .5rem; font-size: .8rem; white-space: pre-wrap; word-break: break-all; }

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import score_badge, chf with context %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-0">{{ household.name }}</h1>
+    <div class="text-muted small">Mitglieder: {{ household.members|map(attribute='username')|join(', ') }}</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{{ url_for('main.new_project', id=household.id) }}">+ Neue Idee</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.household_plan', id=household.id) }}">Planung</a>
+    {% if is_owner %}<a class="btn btn-outline-secondary" href="{{ url_for('main.household_settings', id=household.id) }}">Einstellungen</a>{% endif %}
+  </div>
+</div>
+
+{% for w in plan.warnings %}<div class="alert alert-warning py-2">⚠️ {{ w }}</div>{% endfor %}
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-4"><div class="hp-kpi"><div class="hp-kpi-label">Budget / Quartal</div><div class="hp-kpi-value">{{ chf(plan.budget) }}</div>
+    <div class="small text-muted">verplant: {{ chf(plan.committed_cost) }}</div></div></div>
+  <div class="col-sm-4"><div class="hp-kpi"><div class="hp-kpi-label">Zeit / Quartal</div><div class="hp-kpi-value">{{ plan.hours|round(0)|int }} h</div>
+    <div class="small text-muted">verplant: {{ plan.committed_hours|round(1) }} h</div></div></div>
+  <div class="col-sm-4"><div class="hp-kpi"><div class="hp-kpi-label">Vorschlag «Was liegt drin?»</div><div class="hp-kpi-value">{{ plan.selected|length }} Projekt{{ 'e' if plan.selected|length != 1 }}</div>
+    <div class="small"><a href="{{ url_for('main.household_plan', id=household.id) }}">Details ansehen →</a></div></div></div>
+</div>
+
+<div class="hp-board">
+  {% for status, items in columns.items() if show_closed or status not in ('erledigt', 'verworfen') %}
+  <section class="hp-col">
+    <h2 class="hp-col-title"><span class="hp-dot hp-status-{{ status }}"></span>{{ STATUS_LABELS[status] }} <span class="text-muted">{{ items|length }}</span></h2>
+    {% for p, score in items %}
+    <a class="card hp-card hp-project mb-2 text-decoration-none text-body" href="{{ url_for('main.project', id=p.id) }}">
+      <div class="card-body p-2">
+        <div class="fw-semibold">{{ p.title }}</div>
+        <div class="d-flex flex-wrap gap-1 align-items-center mt-1 small">
+          {{ score_badge(score) }}
+          {% if p.open_dependencies and p.is_open %}<span class="badge text-bg-secondary" title="Wartet auf {{ p.open_dependencies|map(attribute='title')|join(', ') }}">🔒 blockiert</span>{% endif %}
+          {% if score.missing_raters and p.status == 'idee' %}<span class="text-muted">fehlt: {{ score.missing_raters|map(attribute='username')|join(', ') }}</span>{% endif %}
+        </div>
+        <div class="small text-muted mt-1">{{ chf(p.estimated_cost) }} · {{ p.estimated_hours|float|round(1) }} h</div>
+      </div>
+    </a>
+    {% else %}<div class="text-muted small px-1">–</div>{% endfor %}
+  </section>
+  {% endfor %}
+</div>
+<div class="mt-3 small">
+  {% if show_closed %}<a href="{{ url_for('main.household', id=household.id) }}">Erledigte &amp; verworfene ausblenden</a>
+  {% else %}<a href="{{ url_for('main.household', id=household.id, closed=1) }}">Erledigte &amp; verworfene anzeigen</a>{% endif %}
+</div>
+{% endblock %}

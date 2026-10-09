@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field with context %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow-sm"><div class="card-body p-4">
+      <h1 class="h3 mb-3">Registrieren</h1>
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ field(form.username) }}
+        {{ field(form.email, type="email") }}
+        {{ field(form.password) }}
+        {{ field(form.password2) }}
+        {{ form.submit(class="btn btn-primary w-100") }}
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

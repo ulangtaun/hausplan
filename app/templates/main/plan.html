@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, chf with context %}
+{% block content %}
+<nav class="small mb-2"><a href="{{ url_for('main.household', id=household.id) }}">← {{ household.name }}</a></nav>
+<h1 class="h3 mb-3">Planung</h1>
+{% for w in plan.warnings %}<div class="alert alert-warning py-2">⚠️ {{ w }}</div>{% endfor %}
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card mb-4"><div class="card-body">
+      <h2 class="h5">Was liegt drin? <span class="text-muted small fw-normal">Vorschlag für dieses Quartal</span></h2>
+      <p class="small text-muted">Auswahl mit dem höchsten Nutzen pro eingesetztem Franken und Stunde – unter Berücksichtigung
+        von Budget, Zeit und Abhängigkeiten. Laufende Projekte sind bereits eingerechnet.</p>
+      <div class="hp-meter mb-1" title="Budget"><div style="width: {{ [((plan.reserved.cost + plan.selected_cost) / plan.budget * 100) if plan.budget else 0, 100]|min }}%"></div></div>
+      <div class="small mb-3">Budget: {{ chf(plan.reserved.cost + plan.selected_cost) }} von {{ chf(plan.budget) }} ·
+        Zeit: {{ (plan.reserved.hours + plan.selected_hours)|round(1) }} von {{ plan.hours|round(1) }} h</div>
+      <table class="table table-sm align-middle">
+        <thead><tr><th>Projekt</th><th class="text-end">Score</th><th class="text-end">Kosten</th><th class="text-end">Stunden</th></tr></thead>
+        <tbody>
+        {% for p in plan.reserved.projects %}
+          <tr class="table-light"><td><a href="{{ url_for('main.project', id=p.id) }}">{{ p.title }}</a> {{ status_badge(p.status) }}</td><td></td>
+            <td class="text-end">{{ chf(p.estimated_cost) }}</td><td class="text-end">{{ p.estimated_hours|float|round(1) }}</td></tr>
+        {% endfor %}
+        {% for s in plan.selected %}
+          <tr><td>✅ <a href="{{ url_for('main.project', id=s.project.id) }}">{{ s.project.title }}</a> {{ status_badge(s.project.status) }}</td>
+            <td class="text-end">{{ s.score|round(0)|int }}</td>
+            <td class="text-end">{{ chf(s.project.estimated_cost) }}</td><td class="text-end">{{ s.project.estimated_hours|float|round(1) }}</td></tr>
+        {% else %}
+          <tr><td colspan="4" class="text-muted">Kein weiteres Projekt passt in den Rahmen.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% if plan.skipped %}
+      <h3 class="h6 mt-3">Nicht enthalten</h3>
+      <ul class="small mb-0">
+        {% for s in plan.skipped %}<li><a href="{{ url_for('main.project', id=s.project.id) }}">{{ s.project.title }}</a> – {{ s.reason }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card mb-4"><div class="card-body">
+      <h2 class="h5">Empfohlene Reihenfolge</h2>
+      <p class="small text-muted">Berücksichtigt Abhängigkeiten; bei freier Wahl kommt der höhere Score zuerst.</p>
+      <ol class="hp-order mb-0">
+        {% for o in order %}
+        <li><a href="{{ url_for('main.project', id=o.project.id) }}">{{ o.project.title }}</a>
+          {% if o.score is not none %}<span class="text-muted small">({{ o.score|round(0)|int }})</span>{% endif %}
+          {% if o.waits_for %}<div class="small text-muted">nach: {{ o.waits_for|map(attribute='title')|join(', ') }}</div>{% endif %}
+        </li>
+        {% else %}<li class="text-muted">Keine offenen Projekte.</li>{% endfor %}
+      </ol>
+    </div></div>
+
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Schätzgenauigkeit</h2>
+      {% if accuracy.messages %}
+        {% for m in accuracy.messages %}<p class="mb-1">{{ m }}</p>{% endfor %}
+        <p class="small text-muted mb-0">Basis: {{ accuracy.completed_projects }} abgeschlossene Projekte.</p>
+      {% else %}
+        <p class="text-muted mb-0">Noch keine abgeschlossenen Projekte mit Ist-Werten.</p>
+      {% endif %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}
